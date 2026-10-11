@@ -6,6 +6,18 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A user-mode firmware loader (`axetwo-loader`, `axetwo firmware`): sends the
+  USB firmware the original package installed, RAM only, every block read
+  back before the controller runs. The installer sets it up for the port the
+  unit is on and leaves the original loader installed as the fallback.
+
+### Changed
+
+- `spec/SPEC.md`: firmware loading and the original's ASIO behaviour are now
+  documented from analysis of the original driver.
+
 ## [0.1.0] - 2026-10-11
 
 The first release. Experimental: installed and used on one computer with one

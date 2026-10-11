@@ -16,6 +16,8 @@ usage: axetwo <command>
   capture [secs] [file]   record the unit's USB audio; optionally save a WAV file
   tone [secs] [dBFS]      play a 440 Hz sine to the unit (silence when no level
                           is given) while recording, and report on both streams
+  firmware                check the firmware script on this computer (touches no device)
+  firmware load           load the USB firmware into a unit that is waiting for it
 ";
 
 pub fn run(args: &[String]) -> AnyResult {
@@ -26,6 +28,7 @@ pub fn run(args: &[String]) -> AnyResult {
         Some("setup") => setup_audio(),
         Some("capture") => capture(number(1).unwrap_or(2.0), args.get(2).map(String::as_str)),
         Some("tone") => tone(number(1).unwrap_or(1.0), number(2)),
+        Some("firmware") => firmware(args.get(1).is_some_and(|a| a == "load")),
         _ => {
             print!("{USAGE}");
             Ok(())
@@ -61,6 +64,32 @@ fn status() -> AnyResult {
         l.playback.channels,
         l.capture.bits
     );
+    Ok(())
+}
+
+fn firmware(load: bool) -> AnyResult {
+    use axetwo_stream::firmware;
+    use axetwo_usb::loader::Step;
+    let steps = firmware::read_script()?;
+    let (blocks, bytes) = steps.iter().fold((0, 0), |(n, total), step| match step {
+        Step::Write { data, .. } => (n + 1, total + data.len()),
+        _ => (n, total),
+    });
+    println!("script: {}", firmware::script_path().display());
+    println!("checked: {blocks} blocks, {bytes} bytes, RAM writes and reset changes only");
+    if !load {
+        let waiting =
+            if firmware::unit_is_waiting() { "a unit is waiting for its firmware" } else { "no unit is waiting" };
+        println!("device: {waiting}");
+        return Ok(());
+    }
+    match firmware::load_if_waiting()? {
+        Some(done) => println!(
+            "loaded and verified {} blocks, {} bytes; the unit restarts its USB side now",
+            done.blocks, done.bytes
+        ),
+        None => println!("no unit is waiting for its firmware (or firmware loading is not set up; run the installer)"),
+    }
     Ok(())
 }
 

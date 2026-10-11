@@ -5,6 +5,7 @@
 //! Device Class Definition for Audio Devices, release 2.0.
 
 pub mod layout;
+pub mod loader;
 
 use std::fmt;
 

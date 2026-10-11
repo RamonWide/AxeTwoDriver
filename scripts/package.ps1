@@ -19,7 +19,7 @@ if ($LASTEXITCODE -ne 0) { throw 'build failed' }
 
 if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force $out | Out-Null
-foreach ($exe in 'axetwo-setup.exe', 'axetwo.exe', 'axetwo-panel.exe') {
+foreach ($exe in 'axetwo-setup.exe', 'axetwo.exe', 'axetwo-panel.exe', 'axetwo-loader.exe') {
     Copy-Item (Join-Path $root "target\release\$exe") $out
 }
 Copy-Item (Join-Path $root 'LICENSE') (Join-Path $out 'LICENSE.txt')

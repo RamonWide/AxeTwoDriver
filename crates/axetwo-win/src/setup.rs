@@ -58,11 +58,10 @@ fn text(units: &[u16]) -> String {
 
 /// Finds the present device whose instance id starts with `prefix`
 /// (compared without regard to case).
-fn find(prefix: &str) -> Result<Option<(InfoSet, SP_DEVINFO_DATA, String)>, WinError> {
+fn find(prefix: &str, present_only: bool) -> Result<Option<(InfoSet, SP_DEVINFO_DATA, String)>, WinError> {
+    let flags = if present_only { DIGCF_ALLCLASSES | DIGCF_PRESENT } else { DIGCF_ALLCLASSES };
     // SAFETY: null class and enumerator are allowed with DIGCF_ALLCLASSES.
-    let raw = unsafe {
-        SetupDiGetClassDevsW(std::ptr::null(), std::ptr::null(), std::ptr::null_mut(), DIGCF_ALLCLASSES | DIGCF_PRESENT)
-    };
+    let raw = unsafe { SetupDiGetClassDevsW(std::ptr::null(), std::ptr::null(), std::ptr::null_mut(), flags) };
     if raw == INVALID_HANDLE_VALUE as HDEVINFO {
         return Err(last_error("listing devices"));
     }
@@ -94,7 +93,13 @@ fn find(prefix: &str) -> Result<Option<(InfoSet, SP_DEVINFO_DATA, String)>, WinE
 
 /// Instance id of the present device whose id starts with `prefix`, if any.
 pub fn find_instance(prefix: &str) -> Result<Option<String>, WinError> {
-    Ok(find(prefix)?.map(|(_, _, id)| id))
+    Ok(find(prefix, true)?.map(|(_, _, id)| id))
+}
+
+/// Like [`find_instance`], but also finds a device Windows remembers that is
+/// not attached right now.
+pub fn find_known_instance(prefix: &str) -> Result<Option<String>, WinError> {
+    Ok(find(prefix, false)?.map(|(_, _, id)| id))
 }
 
 /// Writes `DeviceInterfaceGUIDs` into the device's hardware key so WinUSB
@@ -123,7 +128,17 @@ fn set_interface_guid(set: &InfoSet, info: &SP_DEVINFO_DATA, interface_guid: &st
 /// Puts Microsoft's WinUSB driver on the present device whose instance id
 /// starts with `instance_prefix`, exposed under `interface_guid`.
 pub fn bind_winusb(instance_prefix: &str, interface_guid: &str) -> Result<BindReport, WinError> {
-    let Some((set, mut info, instance_id)) = find(instance_prefix)? else {
+    bind(instance_prefix, interface_guid, true)
+}
+
+/// Like [`bind_winusb`], for a device Windows remembers whether or not it is
+/// attached right now. Used for the unit's short-lived power-on identity.
+pub fn bind_winusb_known(instance_prefix: &str, interface_guid: &str) -> Result<BindReport, WinError> {
+    bind(instance_prefix, interface_guid, false)
+}
+
+fn bind(instance_prefix: &str, interface_guid: &str, present_only: bool) -> Result<BindReport, WinError> {
+    let Some((set, mut info, instance_id)) = find(instance_prefix, present_only)? else {
         return Err(WinError { what: "finding the device (is it connected and switched on?)", code: 0 });
     };
     set_interface_guid(&set, &info, interface_guid)?;

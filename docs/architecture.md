@@ -48,6 +48,7 @@ apps/
   axetwo             command-line tool: status | probe | setup | capture | tone
   axetwo-panel       control panel: status, USB streaming mode, buffer size
   axetwo-setup       installer: original driver off (with backup), WinUSB on, files, registration
+  axetwo-loader      background program: sends the USB firmware when the unit is switched on
 spec/                functional specification
 ```
 

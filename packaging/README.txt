@@ -34,6 +34,8 @@ WHAT IS IN THIS FOLDER
   axetwo-setup.exe   the installer                          MIT license
   axetwo.exe         command-line tool for testing          MIT license
   axetwo-panel.exe   the control panel                      MIT license
+  axetwo-loader.exe  loads the unit's USB firmware at       MIT license
+                     power-on (runs in the background)
   axetwo_daw.dll     audio driver library for DAWs          GPL version 3
 
   The MIT license is in LICENSE.txt, the GPL in LICENSE-DAW.txt, and the

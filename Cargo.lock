@@ -427,6 +427,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "axetwo-loader"
+version = "0.1.0"
+dependencies = [
+ "axetwo-stream",
+]
+
+[[package]]
 name = "axetwo-panel"
 version = "0.1.0"
 dependencies = [

@@ -31,20 +31,38 @@ power cycle. `[W]` (first arrival as `0003`, then `8003` two seconds later).
 
 ### 1.1 Firmware loading
 
-Not implemented by this project yet; the original loader still does it.
+The firmware goes into the RAM of the unit's USB controller and is lost when
+the unit is switched off; it has to be sent at every power-on. AxeTwoDriver
+ships no firmware: it sends what the original package's script on the user's
+computer describes (`System32\axefx2load\axefx2load.spt`).
 
-- The original loader takes its instructions from a script file of records.
-  Each record starts with the ASCII tag `CSPT`, a 32-bit length, and describes
-  one control transfer with its data. `[B]`
-- In the script examined, every record is vendor request `0xA0` (the Cypress
-  EZ-USB "firmware load" request), with the target address in `wValue`. The
-  first record writes `01` to address `0xE600` and the last writes `00` there
-  (hold the controller in reset, then release it). `[B]`
-- Two different script files exist on a machine with the original packages
-  installed (6991 and 7104 bytes). Which the loader uses is `[?]`.
-- Whether the image is only loaded to RAM (lost at power-off) or anything is
-  written to persistent storage has not been established: `[?]`. Until it is,
-  nothing in this repository sends request `0xA0`.
+The script: `[B]`
+
+- A sequence of records. Each starts with the ASCII tag `CSPT` and a 32-bit
+  record length, has a 32-byte header, and describes one control transfer
+  with its data: request code at offset 16, `wValue` at 18, `wIndex` at 20,
+  data length at 28, data from 32. The other header bytes are the same in
+  every record of both scripts examined; their meaning is `[?]`, and the
+  parser refuses a record in which they differ.
+- Every record is vendor request `0xA0`, the controller's built-in "firmware
+  load" request, with the target address in `wValue` and `wIndex` zero.
+- Two kinds of target only: the controller's RAM (the highest address
+  written is `0x1109`, well inside its 16 kB), and address `0xE600`, the CPU
+  control register, written with `01` (hold in reset) or `00` (run).
+- The order is: hold, write a small first stage, run, hold again, write the
+  second stage, run. All RAM writes happen while the CPU is held.
+- Two scripts exist on a machine with the original packages installed (65
+  records with 5020 bytes of firmware, and 63 records with 4971). The
+  original loader is configured to use the one under `System32`.
+
+No request that could reach permanent storage appears in either script, and
+request `0xA0` itself can only reach RAM and that one register. `[B]` `[P]`
+(the controller's public documentation).
+
+AxeTwoDriver's loader accepts only records of exactly this kind, checks the
+whole script before sending anything, and reads every block back (request
+`0xA0`, device to host) before it lets the CPU run. Loading a real unit this
+way is `[?]` until `docs/gaps.md` says it has been done.
 
 ## 2. The running device
 
@@ -174,6 +192,27 @@ Settings model: `[B]`
 - Two switches allow several ASIO programs, or ASIO and the Windows sound
   device, to use the unit at once.
 
+ASIO side: `[B]`
+
+- Channels are named by the unit if it supplies names, otherwise "IN 1",
+  "IN 2" ... and "OUT 1", "OUT 2" .... This unit supplies none.
+- PCM channels are offered to the host as 32-bit integer samples,
+  little-endian, all in one channel group.
+- One clock source is reported.
+- The buffer size is not negotiable by the host: minimum, maximum and
+  preferred size are all the one size chosen in the control panel. A
+  compatibility switch rounds it up to a power of two for hosts that need
+  that.
+- Latencies are those the kernel driver reports plus a fixed offset.
+
+Streaming: `[B]`
+
+- When the unit has both a capture and a playback stream, the original
+  requires no feedback endpoint for playback: it times playback from the
+  capture stream, as `axetwo-stream` does. Only a playback-only device
+  without a feedback endpoint is refused.
+- The capture and playback endpoints must have the same interval.
+
 Start-up sequence, in outline: `[B]` choose the stream formats, read the
 current sample rate from the clock source, prepare the streams, the Windows
 sound device and the ASIO side, apply the sample rate to the stream engine,
@@ -181,6 +220,11 @@ then start streaming. With this unit's fixed clock that involves no write to
 the device beyond selecting the configuration and the streaming alternate
 settings. `[?]` (inferred from the read-only clock; not captured on the wire).
 
-Still to be analysed: how the original sizes its playback packets under
-implicit feedback; the ASIO sample format, channel names and reported
-latencies; the list of ASIO buffer sizes; the control panel's exact behaviour.
+Not established: `[?]`
+
+- Which buffer sizes the original control panel lists. The list is not a
+  table in the control panel or the kernel driver; the panel asks the
+  driver's programming library for it.
+- What the two values of the buffer-size selection switch mean.
+- The exact size of each playback packet the original sends. AxeTwoDriver's
+  pattern differs (`docs/architecture.md`) and plays cleanly.

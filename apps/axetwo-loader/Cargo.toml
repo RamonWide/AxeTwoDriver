@@ -1,0 +1,16 @@
+[package]
+name = "axetwo-loader"
+description = "Background program that loads the Axe-Fx II's USB firmware when the unit is switched on"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[target.'cfg(windows)'.dependencies]
+axetwo-stream = { workspace = true }

@@ -1,6 +1,7 @@
 //! The install and uninstall steps.
 
 use crate::packages;
+use axetwo_stream::firmware::{self, LOADER_DEVICE_ID, LOADER_INTERFACE_GUID};
 use axetwo_stream::status::{self, UnitState};
 use axetwo_stream::{AUDIO_FUNCTION_ID, INTERFACE_GUID};
 use axetwo_win::registry::{self, Root};
@@ -12,7 +13,9 @@ use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
 
 /// Programs installed when they sit next to the installer.
-const PROGRAMS: [&str; 3] = ["axetwo.exe", "axetwo-panel.exe", "axetwo-setup.exe"];
+const PROGRAMS: [&str; 4] = ["axetwo.exe", "axetwo-panel.exe", "axetwo-setup.exe", "axetwo-loader.exe"];
+/// Name of the scheduled task that runs the firmware loader from boot.
+const LOADER_TASK: &str = "AxeTwoDriver Firmware Loader";
 /// Optional audio-driver libraries, registered with Windows when present.
 const LIBRARIES: [&str; 1] = ["axetwo_daw.dll"];
 const DOCUMENTS: [&str; 6] =
@@ -122,6 +125,8 @@ fn pause(quiet: bool) {
 fn run_install(log: &mut Log) {
     let dest = install_dir();
     log.say("\n1. Copying the programs");
+    // A running loader would keep its file locked.
+    tool("schtasks", &["/end", "/tn", LOADER_TASK]);
     copy_files(log, &dest);
 
     log.say("\n2. Taking the original audio driver off the unit");
@@ -130,7 +135,10 @@ fn run_install(log: &mut Log) {
     log.say("\n3. Setting up the unit's audio");
     set_up_audio(log);
 
-    log.say("\n4. Registering with Windows");
+    log.say("\n4. Setting up firmware loading");
+    set_up_loader(log, &dest);
+
+    log.say("\n5. Registering with Windows");
     for library in LIBRARIES {
         let path = dest.join(library);
         if path.exists() {
@@ -248,6 +256,71 @@ fn set_up_audio(log: &mut Log) {
     }
 }
 
+/// Makes AxeTwoDriver's own loader bring the unit up at power-on, in place
+/// of the original package's kernel loader. The original stays installed and
+/// takes over again if the unit's power-on device is uninstalled.
+fn set_up_loader(log: &mut Log, dest: &Path) {
+    let program = dest.join("axetwo-loader.exe");
+    if !program.exists() {
+        return;
+    }
+    if let Err(e) = firmware::read_script() {
+        log.say(&format!("  skipped: {e}"));
+        return;
+    }
+    match setup::bind_winusb_known(LOADER_DEVICE_ID, LOADER_INTERFACE_GUID) {
+        Ok(report) => log.say(&format!("  {} now uses Windows' own {}", report.instance_id, report.driver)),
+        Err(e) => {
+            log.say(&format!("  left with the original loader ({e})"));
+            return;
+        }
+    }
+    // schtasks reads its task definition as UTF-16.
+    let definition = TASK_XML.replace("{PROGRAM}", &program.to_string_lossy());
+    let mut bytes = vec![0xff, 0xfe];
+    bytes.extend(definition.encode_utf16().flat_map(u16::to_le_bytes));
+    let file = data_dir().join("loader-task.xml");
+    let created = std::fs::write(&file, bytes).is_ok()
+        && tool("schtasks", &["/create", "/tn", LOADER_TASK, "/xml", &file.to_string_lossy(), "/f"]).0;
+    let _ = std::fs::remove_file(&file);
+    if !created {
+        log.problem("the firmware loader could not be registered to start with Windows");
+        return;
+    }
+    if tool("schtasks", &["/run", "/tn", LOADER_TASK]).0 {
+        log.say("  firmware loader started; it also starts with Windows");
+    } else {
+        log.problem("the firmware loader could not be started");
+    }
+}
+
+/// The scheduled task: start at boot as the system account, never time out,
+/// run on battery, restart if it ever exits.
+const TASK_XML: &str = r#"<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Loads the Axe-Fx II's USB firmware when the unit is switched on.</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <BootTrigger><Enabled>true</Enabled></BootTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author"><UserId>S-1-5-18</UserId><RunLevel>HighestAvailable</RunLevel></Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <RestartOnFailure><Interval>PT1M</Interval><Count>999</Count></RestartOnFailure>
+    <Enabled>true</Enabled>
+  </Settings>
+  <Actions Context="Author">
+    <Exec><Command>{PROGRAM}</Command></Exec>
+  </Actions>
+</Task>
+"#;
+
 fn register_uninstaller(log: &mut Log, dest: &Path) {
     let uninstall = format!("\"{}\" uninstall", dest.join("axetwo-setup.exe").display());
     let strings = [
@@ -304,7 +377,18 @@ fn run_uninstall(log: &mut Log) {
         log.problem(&e.to_string());
     }
 
-    log.say("\n2. Returning the unit's audio to Windows");
+    log.say("\n2. Returning firmware loading to the original loader");
+    tool("schtasks", &["/end", "/tn", LOADER_TASK]);
+    tool("schtasks", &["/delete", "/tn", LOADER_TASK, "/f"]);
+    match setup::find_known_instance(LOADER_DEVICE_ID) {
+        Ok(Some(instance)) => {
+            tool("pnputil", &["/remove-device", &instance]);
+            log.say("  done");
+        }
+        _ => log.say("  nothing to do"),
+    }
+
+    log.say("\n3. Returning the unit's audio to Windows");
     match setup::find_instance(AUDIO_FUNCTION_ID) {
         Ok(Some(instance)) => {
             let (ok, _) = tool("pnputil", &["/remove-device", &instance]);
@@ -318,7 +402,7 @@ fn run_uninstall(log: &mut Log) {
         _ => log.say("  the unit is not connected; if it is still set up, use Uninstall device in Device Manager"),
     }
 
-    log.say("\n3. Removing the programs");
+    log.say("\n4. Removing the programs");
     match remove_later(&dest) {
         Ok(()) => log.say(&format!("  {}", dest.display())),
         Err(e) => log.problem(&format!("could not remove {}: {e}", dest.display())),

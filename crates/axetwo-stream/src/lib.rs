@@ -11,6 +11,8 @@ pub mod settings;
 #[cfg(windows)]
 mod duplex;
 #[cfg(windows)]
+pub mod firmware;
+#[cfg(windows)]
 pub mod status;
 #[cfg(windows)]
 pub use duplex::{Duplex, Flow, Stats, StreamError, AUDIO_FUNCTION_ID, INTERFACE_GUID};
