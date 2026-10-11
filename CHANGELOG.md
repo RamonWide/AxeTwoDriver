@@ -6,21 +6,28 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-11
+
+The first release. Experimental: installed and used on one computer with one
+Axe-Fx II XL.
+
 ### Added
 
-- `axetwo probe`: reads and decodes the unit's USB descriptors through the hub
-  driver, with no driver bound to the unit.
-- `axetwo status`: says what is connected and whether it is ready to stream.
-- `axetwo setup`: puts Windows' own WinUSB driver on the unit's audio
-  function, without a driver package or certificate.
-- `axetwo capture` and `axetwo tone`: full-duplex streaming test, 4 channels
-  in and 2 out at 24-bit 48 kHz, with implicit feedback.
-- Functional specification of the unit on USB (`spec/SPEC.md`).
-- Control panel (`axetwo-panel`): device status, USB streaming mode (1 to
-  32 ms) and suggested buffer size, stored per user.
+- USB MIDI on current Windows, by handing the unit to Windows' own class
+  driver.
+- Full-duplex audio through Microsoft's WinUSB driver, with no kernel code
+  and no certificate: 4 channels in and 2 out at 24-bit 48 kHz, timed by
+  implicit feedback.
 - Installer (`axetwo-setup`): one double-click backs up and removes the
   original audio driver, sets up audio, installs the programs and registers
-  the optional DAW library; uninstalls from Installed apps.
-- `scripts/package.ps1` builds the download.
+  the optional DAW library from
+  [AxeTwoDriver-DAW](https://github.com/RamonWide/AxeTwoDriver-DAW);
+  uninstalls from Installed apps.
+- Control panel (`axetwo-panel`): device status, USB streaming mode (1 to
+  32 ms) and suggested buffer size, stored per user.
+- Command-line tool (`axetwo`): `status`, `probe` (reads and decodes the
+  unit's USB descriptors with no driver bound), `setup`, `capture` and `tone`.
+- Functional specification of the unit on USB (`spec/SPEC.md`).
 
-[Unreleased]: https://github.com/RamonWide/AxeTwoDriver/commits/main
+[Unreleased]: https://github.com/RamonWide/AxeTwoDriver/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/RamonWide/AxeTwoDriver/releases/tag/v0.1.0

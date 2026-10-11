@@ -319,12 +319,8 @@ fn run_uninstall(log: &mut Log) {
     }
 
     log.say("\n3. Removing the programs");
-    // A running program cannot delete itself, so a short-lived command prompt
-    // removes the folder once this one has closed.
-    let command = format!("ping -n 3 127.0.0.1 >nul & rmdir /s /q \"{}\"", dest.display());
-    // Its own hidden console, so it outlives this window.
-    match Command::new("cmd").args(["/c", &command]).current_dir(data_dir()).creation_flags(CREATE_NO_WINDOW).spawn() {
-        Ok(_) => log.say(&format!("  {}", dest.display())),
+    match remove_later(&dest) {
+        Ok(()) => log.say(&format!("  {}", dest.display())),
         Err(e) => log.problem(&format!("could not remove {}: {e}", dest.display())),
     }
     let backup = data_dir().join("original-driver");
@@ -334,5 +330,39 @@ fn run_uninstall(log: &mut Log) {
             backup.display(),
             backup.display()
         ));
+    }
+}
+
+/// Removes `dir` a few seconds from now. A running program cannot delete its
+/// own file, so a short-lived command prompt does it once this one has closed.
+fn remove_later(dir: &Path) -> std::io::Result<()> {
+    // Passed verbatim: the command prompt does not understand the quoting
+    // `Command::args` would apply to the path.
+    let command = format!("/c ping -n 3 127.0.0.1 >nul & rmdir /s /q \"{}\"", dir.display());
+    Command::new("cmd")
+        .raw_arg(command)
+        .current_dir(std::env::temp_dir())
+        // Its own hidden console, so it outlives this window.
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn()
+        .map(|_| ())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_folder_with_spaces_in_its_path_is_removed_later() {
+        let dir = std::env::temp_dir().join(format!("axetwo setup test {}", std::process::id()));
+        std::fs::create_dir_all(dir.join("inner")).unwrap();
+        std::fs::write(dir.join("inner").join("file.txt"), "x").unwrap();
+        remove_later(&dir).unwrap();
+        assert!(dir.exists(), "removal must wait for the caller to exit");
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while dir.exists() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(250));
+        }
+        assert!(!dir.exists(), "the folder was not removed");
     }
 }
