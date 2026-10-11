@@ -1,0 +1,40 @@
+name: Hardware report
+description: Tell us how your unit behaves. The most useful thing an owner can do.
+labels: [hardware-report]
+body:
+  - type: dropdown
+    id: model
+    attributes:
+      label: Model
+      options: [Axe-Fx II, Axe-Fx II XL, Axe-Fx II XL+, Other]
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: Output of `axetwo probe`
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: stream
+    attributes:
+      label: Output of `axetwo tone 5`, if you have done the set-up
+      render: text
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: For example, whether `axetwo tone 3 -30` sounds clean.

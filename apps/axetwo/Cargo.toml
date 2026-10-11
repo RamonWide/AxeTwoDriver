@@ -1,0 +1,18 @@
+[package]
+name = "axetwo"
+description = "Command-line tool for AxeTwoDriver: inspect, set up and check an Axe-Fx II on USB"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[target.'cfg(windows)'.dependencies]
+axetwo-win = { workspace = true }
+axetwo-usb = { workspace = true }
+axetwo-stream = { workspace = true }

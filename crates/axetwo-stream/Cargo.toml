@@ -1,0 +1,19 @@
+[package]
+name = "axetwo-stream"
+description = "Full-duplex audio streaming with an Axe-Fx II over WinUSB"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+axetwo-usb = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+axetwo-win = { workspace = true }

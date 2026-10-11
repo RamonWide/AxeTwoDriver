@@ -1,0 +1,69 @@
+name: Bug report
+description: Something does not work, or works differently from what you expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. You do not need to be a programmer to fill this in.
+        Please do not attach driver files or firmware from Fractal Audio.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: AxeTwoDriver version
+      description: The version in the name of the file you downloaded, or the commit if you built it yourself.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - Installer or uninstaller
+        - MIDI
+        - Audio in a DAW
+        - Control panel
+        - Command-line tool
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      placeholder: "Windows 11 24H2, build 26100"
+    validations:
+      required: true
+  - type: dropdown
+    id: model
+    attributes:
+      label: Device
+      options:
+        - Axe-Fx II XL+
+        - Axe-Fx II XL
+        - Axe-Fx II (Mark I or II)
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Audio program and version, if this is about audio
+  - type: textarea
+    id: log
+    attributes:
+      label: Installer log, if this is about installing
+      description: The contents of C:\ProgramData\AxeTwoDriver\install.log
+      render: text
+  - type: textarea
+    id: status
+    attributes:
+      label: Output of `axetwo status`
+      render: text

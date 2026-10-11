@@ -1,0 +1,17 @@
+[package]
+name = "axetwo-setup"
+description = "Installer for AxeTwoDriver: one double-click sets up the unit and the programs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[target.'cfg(windows)'.dependencies]
+axetwo-stream = { workspace = true }
+axetwo-win = { workspace = true }

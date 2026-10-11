@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = ["crates/*", "apps/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.95"
+authors = ["The AxeTwoDriver contributors"]
+repository = "https://github.com/RamonWide/AxeTwoDriver"
+homepage = "https://github.com/RamonWide/AxeTwoDriver"
+readme = "README.md"
+keywords = ["axe-fx", "usb", "audio", "driver", "windows"]
+categories = ["hardware-support", "multimedia::audio"]
+# Not on crates.io yet; remove this line in the release that publishes.
+publish = false
+
+# Small, fast release binaries for the downloads.
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# `unsafe` is denied everywhere except `axetwo-win`, the one crate that calls
+# the operating system.
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.dependencies]
+axetwo-usb = { path = "crates/axetwo-usb" }
+axetwo-win = { path = "crates/axetwo-win" }
+axetwo-stream = { path = "crates/axetwo-stream" }
+eframe = "0.36"
+egui = "0.36"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+todo = "warn"
