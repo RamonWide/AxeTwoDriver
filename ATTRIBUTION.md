@@ -10,6 +10,7 @@ exceptions listed here.
 | USB configuration descriptor of an Axe-Fx II XL | `crates/axetwo-usb/src/layout.rs` (test data) | Read from the device with `axetwo probe`. It is the device's public self-description, sent to any computer it is plugged into. |
 | USB vendor and product IDs `2466:0003`, `2466:8003` | `crates/axetwo-usb/src/layout.rs` | Reported by the device. Facts required to find it. |
 | Names and values of the original driver's settings | `spec/SPEC.md`, section 4; the list of seven USB streaming modes in `crates/axetwo-stream/src/settings.rs` | Short functional names and the number of milliseconds each stands for, recovered by analysing the original driver and kept so that users find the settings they know. Facts and short labels; no license claimed. See `docs/clean-room.md`. |
+| Layout of the original firmware script | `crates/axetwo-usb/src/loader.rs`, `spec/SPEC.md` section 1.1 | Worked out from the script file of the original driver package. A description of a file format; the firmware the script carries is not included anywhere in this repository. |
 
 No file from Fractal Audio's software is included.
 

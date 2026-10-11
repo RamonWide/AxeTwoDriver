@@ -8,12 +8,15 @@ Ranked by how much each one blocks real use. Tags are those of `spec/SPEC.md`.
 2. **Playback has only been judged by ear, briefly.** A 440 Hz test tone
    sounds clean; nobody has measured distortion or listened to music through
    it for long.
-3. **No Windows sound device.** Not possible without a kernel driver.
-4. **AxeTwoDriver's own firmware loader has not yet loaded a real unit.**
-   The script is known to write RAM only (`spec/SPEC.md`, 1.1) and the
-   loader verifies every block, but until it has been run at a power-on the
-   original loader is the proven one. The firmware itself still comes from
-   the original package, which therefore must stay installed.
+3. **No Windows sound device, and none planned.** Windows only lists audio
+   devices that come from kernel drivers, and its own USB audio driver
+   refuses the unit.
+4. **The automatic firmware load at power-on has not completed once yet.**
+   The loader has loaded a real unit when started by hand, and the
+   background program has taken a waiting unit over by itself, but those two
+   have not yet run together from a cold power-on with the final build. The
+   firmware itself still comes from the original package, which therefore
+   must stay installed; AxeTwoDriver only switches its kernel loader off.
 5. **Parts of the installer have only run as no-ops.** On the one machine
    it was tried on, the original driver was already removed and audio was
    already set up, so those two steps reported "nothing to do". The code

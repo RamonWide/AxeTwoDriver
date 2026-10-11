@@ -26,8 +26,9 @@
 > [!IMPORTANT]
 > **Status: experimental.** Today AxeTwoDriver gets the unit's USB **MIDI** working on Windows 11
 > and gives a DAW an audio device through the companion project
-> [AxeTwoDriver-DAW](https://github.com/RamonWide/AxeTwoDriver-DAW). It does not load the unit's USB
-> firmware itself, and it adds no Windows sound device. It has been run on
+> [AxeTwoDriver-DAW](https://github.com/RamonWide/AxeTwoDriver-DAW). It adds no Windows sound device,
+> and it contains no firmware: Fractal Audio's own driver package must be installed, because the
+> unit's USB firmware is taken from it. It has been run on
 > one Axe-Fx II XL on one computer. [ROADMAP.md](ROADMAP.md) says exactly where things stand.
 
 ## Where it stands
@@ -40,8 +41,8 @@
 | ASIO driver for DAWs | **Works** in one DAW so far, from [AxeTwoDriver-DAW](https://github.com/RamonWide/AxeTwoDriver-DAW); 64-bit hosts |
 | Control panel | Status, USB streaming mode, buffer size |
 | Installer | One download, one double-click; uninstalls from Installed apps |
-| Windows sound device (browser, media players) | Not possible without a kernel driver; see the roadmap |
-| USB firmware loading at power-on | Still done by the original package's loader |
+| Windows sound device (browser, media players) | Not possible without a kernel driver; not planned |
+| USB firmware loading at power-on | Own user-mode loader; it sends the firmware the original package installed and ships none itself |
 
 ## Why the original stopped working
 
@@ -71,7 +72,7 @@ More in [`docs/architecture.md`](docs/architecture.md).
 
 Download the zip from the [latest release](https://github.com/RamonWide/AxeTwoDriver/releases/latest),
 unzip it, and double-click `axetwo-setup.exe`. The guide is [`docs/install.md`](docs/install.md).
-Fractal Audio's own driver package must be installed first (its firmware loader is still used).
+Fractal Audio's own driver package must be installed first: the unit's USB firmware comes from it.
 
 ## Build from source
 

@@ -16,9 +16,9 @@ lists those features.
 | USB streaming modes (1 to 32 ms) | Works: the same seven modes, set in the control panel |
 | ASIO buffer size choice | 64 to 4096 frames, in the control panel or the host |
 | Several ASIO programs at once | Not yet |
-| Windows sound device | Not possible in user mode |
+| Windows sound device | Not possible in user mode; not planned |
 | Control panel | Status, format and buffer settings; no clock-source or volume pages (the unit has neither control) |
-| Firmware loading at power-on | Own user-mode loader, sending the firmware the original package installed; not yet proven at a power-on |
+| Firmware loading at power-on | Own user-mode loader, sending the firmware the original package installed. Loads a real unit; the fully automatic power-on path awaits its first complete run |
 | Installer | `axetwo-setup.exe`: one double-click; uninstall from Installed apps |
 
 ## Milestones
@@ -46,14 +46,14 @@ lists those features.
 
 ### 0.3: standing on its own
 
-- [ ] Firmware loader, reading the firmware from the user's installed original package (built; awaiting its first power-on test)
+- [x] Firmware loader, reading the firmware from the user's installed original package
+- [ ] The automatic load confirmed from a cold power-on
 - [ ] 32-bit ASIO driver for older hosts
 - [ ] Reports from the original Axe-Fx II and the XL+
 
-### Later, and only with help
+### Not planned
 
-- A Windows sound device. This needs a kernel driver and therefore a signing
-  certificate and a Microsoft hardware developer account. If someone can
-  sponsor that, a small kernel audio driver in Rust becomes realistic, and it
-  would also remove the WinUSB packet-pattern limitation described in
-  `docs/architecture.md`.
+- **A Windows sound device** (for browsers, media players and system
+  sounds). It needs a kernel driver, and with it a signing certificate and a
+  Microsoft hardware developer account. The project's owner has decided to
+  leave it out.

@@ -34,10 +34,12 @@ session. The streaming code was written and verified on hardware from the
 device's descriptors and the public specifications before the original driver
 was opened in an analysis tool. The same session then analysed parts of the
 original driver to document its user-visible settings (`spec/SPEC.md`,
-section 4, facts tagged `[B]`). One piece of code follows from that
+section 4, facts tagged `[B]`). Two pieces of code follow from that
 analysis: the list of seven USB streaming modes, their names and their
-values in milliseconds, in `crates/axetwo-stream/src/settings.rs`. Nothing
-else was written from it, and no code was translated from decompiler
+values in milliseconds, in `crates/axetwo-stream/src/settings.rs`; and the
+record layout of the original firmware script that
+`crates/axetwo-usb/src/loader.rs` reads, which was worked out from the
+script file itself. Nothing else was written from it, and no code was translated from decompiler
 output, but the two roles were not held by separate people. From here
 on, keep the roles in separate sessions or with separate people.
 
@@ -45,8 +47,8 @@ on, keep the roles in separate sessions or with separate people.
 
 - Any file from Fractal Audio's software: drivers, INF files, firmware or
   loader scripts, control-panel files, installers.
-- The unit's USB firmware in any form. A future loader must read it from the
-  user's own installed copy of the original package.
+- The unit's USB firmware in any form, including in tests. The loader reads
+  it from the user's own installed copy of the original package.
 - Decompiler or disassembler output, or code translated from it.
 - The original's user-interface text beyond the short names of settings.
 

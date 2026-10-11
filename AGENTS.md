@@ -46,8 +46,9 @@ A crate may depend only on lower layers.
 
 1. **Hardware is someone's instrument.** Never send a request to the unit
    that the spec does not describe. Read before you write: check the unit's
-   descriptors, then act. Nothing may send the firmware-load request until
-   `spec/SPEC.md` section 1.1 says it is safe. Automated tests never touch
+   descriptors, then act. The firmware loader may only ever send what
+   `axetwo_usb::loader` accepts: RAM writes and reset changes, verified by
+   read-back. Do not widen that parser. Automated tests never touch
    hardware.
 2. **Never crash.** A device that answers garbage, or not at all, must
    produce an error the user can act on. Non-test code has no `unwrap`,

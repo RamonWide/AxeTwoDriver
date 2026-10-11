@@ -10,11 +10,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A user-mode firmware loader (`axetwo-loader`, `axetwo firmware`): sends the
   USB firmware the original package installed, RAM only, every block read
-  back before the controller runs. The installer sets it up for the port the
-  unit is on and leaves the original loader installed as the fallback.
+  back before the controller runs. The installer starts it with Windows and
+  switches the original kernel loader off; uninstalling switches it back on.
 
 ### Changed
 
+- The installer waits for a program it has just stopped to release its file.
+- A Windows sound device is no longer on the roadmap.
 - `spec/SPEC.md`: firmware loading and the original's ASIO behaviour are now
   documented from analysis of the original driver.
 

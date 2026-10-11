@@ -10,9 +10,10 @@ TO INSTALL
   3. Double-click axetwo-setup.exe and answer Yes when Windows asks.
 
   The installer shows each step and tells you if something needs attention.
-  Fractal Audio's own driver package must be installed first: AxeTwoDriver
-  still relies on its firmware loader. The installer takes the original
-  audio driver off the unit (keeping a backup) and leaves the loader alone.
+  Fractal Audio's own driver package must be installed first: the unit's
+  USB firmware comes from it. The installer takes the original audio driver
+  off the unit (keeping a backup) and switches the original firmware loader
+  off; uninstalling switches it back on.
 
 AFTERWARDS
 

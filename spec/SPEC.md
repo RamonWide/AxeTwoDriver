@@ -61,8 +61,21 @@ request `0xA0` itself can only reach RAM and that one register. `[B]` `[P]`
 
 AxeTwoDriver's loader accepts only records of exactly this kind, checks the
 whole script before sending anything, and reads every block back (request
-`0xA0`, device to host) before it lets the CPU run. Loading a real unit this
-way is `[?]` until `docs/gaps.md` says it has been done.
+`0xA0`, device to host) before it lets the CPU run.
+
+On hardware: `[H]`
+
+- Sending the 65-record script this way brings the unit up as `2466:8003`
+  with MIDI and audio working: 61 blocks, 5020 bytes, each verified.
+- A read from an **odd** address is answered starting one byte earlier (the
+  address is rounded down to even). Reads from even addresses are exact. The
+  loader therefore reads from the even address below and skips one byte.
+  Writes to odd addresses land where they should.
+- A unit whose first block was written and whose CPU was then left held in
+  reset simply keeps waiting; loading it again from the start works.
+- Windows keeps a driver choice for the waiting identity only if it is made
+  while the unit is attached in that state. A choice made beforehand is
+  replaced by the original loader at the next power-on. `[W]`
 
 ## 2. The running device
 

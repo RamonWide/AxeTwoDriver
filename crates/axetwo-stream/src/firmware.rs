@@ -101,7 +101,13 @@ pub fn load_if_waiting() -> Result<Option<Loaded>, FirmwareError> {
             Step::Run => device.control_out(VENDOR_OUT, REQUEST_FIRMWARE_LOAD, CPU_CONTROL, 0, &[0])?,
             Step::Write { address, data } => {
                 device.control_out(VENDOR_OUT, REQUEST_FIRMWARE_LOAD, *address, 0, data)?;
-                let stored = device.control_in(VENDOR_IN, REQUEST_FIRMWARE_LOAD, *address, 0, data.len() as u16)?;
+                // The controller answers a read from an odd address starting one
+                // byte earlier, so reads start on an even address and the extra
+                // leading byte is skipped.
+                let lead = usize::from(*address & 1);
+                let from = *address - lead as u16;
+                let read = device.control_in(VENDOR_IN, REQUEST_FIRMWARE_LOAD, from, 0, (data.len() + lead) as u16)?;
+                let stored = read.get(lead..).unwrap_or(&[]);
                 if stored != *data {
                     // The controller is held in reset here: the parser only
                     // allows writes while held, so nothing runs.
