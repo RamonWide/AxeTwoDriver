@@ -35,6 +35,8 @@ certificate; add it to the workflow when the project has one.
    - in `CHANGELOG.md`, rename "Unreleased" to the version with today's date, start a new empty
      "Unreleased", and update the links at the bottom;
    - update `ROADMAP.md` (the "Last reviewed" line) and `docs/gaps.md`.
+   Then, in AxeTwoDriver-DAW, run `cargo build` and commit its `Cargo.lock`: it records the
+   version of the crates here, and the release build refuses a lock file that is out of date.
 4. Merge it, then tag that commit and push the tag:
 
    ```sh
