@@ -73,6 +73,8 @@ On hardware: `[H]`
   Writes to odd addresses land where they should.
 - A unit whose first block was written and whose CPU was then left held in
   reset simply keeps waiting; loading it again from the start works.
+- A background program that polls once a second, takes the waiting unit
+  over and loads it brings the unit up within seconds of power-on.
 - Windows keeps a driver choice for the waiting identity only if it is made
   while the unit is attached in that state. A choice made beforehand is
   replaced by the original loader at the next power-on. `[W]`

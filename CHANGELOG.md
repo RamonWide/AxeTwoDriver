@@ -6,6 +6,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-11
+
 ### Added
 
 - A user-mode firmware loader (`axetwo-loader`, `axetwo firmware`): sends the
@@ -16,6 +18,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - The installer waits for a program it has just stopped to release its file.
+- The uninstaller removes its program folder.
+- DAW channels are named "IN 1" ... and "OUT 1" ..., as the original driver
+  names them (AxeTwoDriver-DAW).
 - A Windows sound device is no longer on the roadmap.
 - `spec/SPEC.md`: firmware loading and the original's ASIO behaviour are now
   documented from analysis of the original driver.
@@ -43,5 +48,6 @@ Axe-Fx II XL.
   unit's USB descriptors with no driver bound), `setup`, `capture` and `tone`.
 - Functional specification of the unit on USB (`spec/SPEC.md`).
 
-[Unreleased]: https://github.com/RamonWide/AxeTwoDriver/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/RamonWide/AxeTwoDriver/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/RamonWide/AxeTwoDriver/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/RamonWide/AxeTwoDriver/releases/tag/v0.1.0

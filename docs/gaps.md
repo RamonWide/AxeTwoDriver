@@ -11,12 +11,13 @@ Ranked by how much each one blocks real use. Tags are those of `spec/SPEC.md`.
 3. **No Windows sound device, and none planned.** Windows only lists audio
    devices that come from kernel drivers, and its own USB audio driver
    refuses the unit.
-4. **The automatic firmware load at power-on has not completed once yet.**
-   The loader has loaded a real unit when started by hand, and the
-   background program has taken a waiting unit over by itself, but those two
-   have not yet run together from a cold power-on with the final build. The
-   firmware itself still comes from the original package, which therefore
-   must stay installed; AxeTwoDriver only switches its kernel loader off.
+4. **Firmware loading has run on one unit, a handful of times.** The
+   background loader has brought the unit up from a cold power-on by itself
+   once with the final build, and by hand once before that. Moving the unit
+   to another USB port, and a first install on a machine that has never seen
+   it, are untested. The firmware itself still comes from the original
+   package, which therefore must stay installed; AxeTwoDriver only switches
+   its kernel loader off.
 5. **Parts of the installer have only run as no-ops.** On the one machine
    it was tried on, the original driver was already removed and audio was
    already set up, so those two steps reported "nothing to do". The code

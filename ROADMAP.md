@@ -18,7 +18,7 @@ lists those features.
 | Several ASIO programs at once | Not yet |
 | Windows sound device | Not possible in user mode; not planned |
 | Control panel | Status, format and buffer settings; no clock-source or volume pages (the unit has neither control) |
-| Firmware loading at power-on | Own user-mode loader, sending the firmware the original package installed. Loads a real unit; the fully automatic power-on path awaits its first complete run |
+| Firmware loading at power-on | Own user-mode loader, sending the firmware the original package installed. Works on the one unit tested, from a cold power-on |
 | Installer | `axetwo-setup.exe`: one double-click; uninstall from Installed apps |
 
 ## Milestones
@@ -47,7 +47,7 @@ lists those features.
 ### 0.3: standing on its own
 
 - [x] Firmware loader, reading the firmware from the user's installed original package
-- [ ] The automatic load confirmed from a cold power-on
+- [x] The automatic load confirmed from a cold power-on
 - [ ] 32-bit ASIO driver for older hosts
 - [ ] Reports from the original Axe-Fx II and the XL+
 
