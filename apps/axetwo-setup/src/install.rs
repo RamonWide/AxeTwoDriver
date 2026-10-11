@@ -174,7 +174,7 @@ fn copy_files(log: &mut Log, dest: &Path) {
         if !from.exists() {
             continue;
         }
-        match std::fs::copy(&from, dest.join(name)) {
+        match copy_when_free(&from, &dest.join(name)) {
             Ok(_) => log.say(&format!("  {name}")),
             Err(e) => log.problem(&format!(
                 "{name} could not be copied ({e}). Close your audio programs and run the installer again."
@@ -182,6 +182,21 @@ fn copy_files(log: &mut Log, dest: &Path) {
         }
     }
     log.say(&format!("  into {}", dest.display()));
+}
+
+/// Copies a file, retrying for a few seconds: a program that was just told
+/// to stop keeps its file locked until it has gone.
+fn copy_when_free(from: &Path, to: &Path) -> std::io::Result<u64> {
+    let deadline = Instant::now() + Duration::from_secs(8);
+    loop {
+        match std::fs::copy(from, to) {
+            Err(e) if Instant::now() < deadline => {
+                let _ = e;
+                std::thread::sleep(Duration::from_millis(250));
+            }
+            result => return result,
+        }
+    }
 }
 
 fn remove_original_driver(log: &mut Log) {
