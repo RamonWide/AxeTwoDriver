@@ -6,6 +6,7 @@ use axetwo_stream::{AUDIO_FUNCTION_ID, INTERFACE_GUID};
 use axetwo_win::registry::{self, Root};
 use axetwo_win::{elevate, setup, winusb};
 use std::io::Write;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
@@ -23,6 +24,8 @@ const ORIGINAL_PACKAGES: [&str; 2] = ["fasusbaudio.inf", "fasusbaudioks.inf"];
 const UNINSTALL_KEY: &str = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\AxeTwoDriver";
 const SHORTCUT: &str = "AxeTwoDriver Control Panel.lnk";
 const DEVICE_WAIT: Duration = Duration::from_secs(20);
+/// Process creation flag: run without attaching to the parent's console.
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 struct Log {
     file: Option<std::fs::File>,
@@ -319,7 +322,8 @@ fn run_uninstall(log: &mut Log) {
     // A running program cannot delete itself, so a short-lived command prompt
     // removes the folder once this one has closed.
     let command = format!("ping -n 3 127.0.0.1 >nul & rmdir /s /q \"{}\"", dest.display());
-    match Command::new("cmd").args(["/c", &command]).current_dir(data_dir()).spawn() {
+    // Its own hidden console, so it outlives this window.
+    match Command::new("cmd").args(["/c", &command]).current_dir(data_dir()).creation_flags(CREATE_NO_WINDOW).spawn() {
         Ok(_) => log.say(&format!("  {}", dest.display())),
         Err(e) => log.problem(&format!("could not remove {}: {e}", dest.display())),
     }
