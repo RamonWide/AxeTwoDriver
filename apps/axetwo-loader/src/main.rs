@@ -11,7 +11,9 @@ fn main() {}
 
 #[cfg(windows)]
 fn main() {
-    use axetwo_stream::firmware;
+    use axetwo_stream::firmware::{self, LOADER_DEVICE_ID, LOADER_INTERFACE_GUID};
+    use axetwo_stream::status::{self, UnitState};
+    use axetwo_win::setup;
     use std::time::Duration;
 
     const POLL: Duration = Duration::from_secs(1);
@@ -22,9 +24,25 @@ fn main() {
     // After a failure, wait for the unit to be switched off before trying
     // again, so a unit that refuses the firmware is not sent it in a loop.
     let mut failed = false;
+    // Whether this arrival of the unit was already handed to WinUSB.
+    let mut claimed = false;
     loop {
-        if !firmware::unit_is_waiting() {
+        let attached_without_firmware = status::read().is_ok_and(|s| s.unit == UnitState::NeedsFirmware);
+        if !attached_without_firmware {
             failed = false;
+            claimed = false;
+        } else if !firmware::unit_is_waiting() {
+            // The unit is there but Windows has it on another driver, or on
+            // none: a new USB port, or the first power-on after installing.
+            // Windows only keeps a driver choice made while the device is
+            // attached, so it is made here.
+            if !claimed {
+                claimed = true;
+                match setup::bind_winusb(LOADER_DEVICE_ID, LOADER_INTERFACE_GUID) {
+                    Ok(report) => log(&format!("took over {}", report.instance_id)),
+                    Err(e) => log(&format!("could not take over the waiting unit: {e}")),
+                }
+            }
         } else if !failed {
             match firmware::load_if_waiting() {
                 Ok(Some(done)) => {

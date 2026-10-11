@@ -431,6 +431,7 @@ name = "axetwo-loader"
 version = "0.1.0"
 dependencies = [
  "axetwo-stream",
+ "axetwo-win",
 ]
 
 [[package]]

@@ -16,6 +16,8 @@ use std::time::{Duration, Instant};
 const PROGRAMS: [&str; 4] = ["axetwo.exe", "axetwo-panel.exe", "axetwo-setup.exe", "axetwo-loader.exe"];
 /// Name of the scheduled task that runs the firmware loader from boot.
 const LOADER_TASK: &str = "AxeTwoDriver Firmware Loader";
+/// Service name of the original package's kernel firmware loader.
+const ORIGINAL_LOADER_SERVICE: &str = "axefx2load";
 /// Optional audio-driver libraries, registered with Windows when present.
 const LIBRARIES: [&str; 1] = ["axetwo_daw.dll"];
 const DOCUMENTS: [&str; 6] =
@@ -268,12 +270,18 @@ fn set_up_loader(log: &mut Log, dest: &Path) {
         log.say(&format!("  skipped: {e}"));
         return;
     }
-    match setup::bind_winusb_known(LOADER_DEVICE_ID, LOADER_INTERFACE_GUID) {
-        Ok(report) => log.say(&format!("  {} now uses Windows' own {}", report.instance_id, report.driver)),
-        Err(e) => {
-            log.say(&format!("  left with the original loader ({e})"));
-            return;
-        }
+    // The original kernel loader would otherwise load the firmware first at
+    // every power-on. It is switched off, not removed: its package and its
+    // script stay, and the uninstaller switches it back on.
+    if !tool("sc", &["config", ORIGINAL_LOADER_SERVICE, "start=", "disabled"]).0 {
+        log.say("  left with the original loader (it could not be switched off)");
+        return;
+    }
+    log.say("  original loader switched off (the uninstaller switches it back on)");
+    // If the unit is waiting right now, take it over at once; otherwise the
+    // background loader does so at the next power-on.
+    if let Ok(report) = setup::bind_winusb(LOADER_DEVICE_ID, LOADER_INTERFACE_GUID) {
+        log.say(&format!("  {} now uses Windows' own {}", report.instance_id, report.driver));
     }
     // schtasks reads its task definition as UTF-16.
     let definition = TASK_XML.replace("{PROGRAM}", &program.to_string_lossy());
@@ -380,6 +388,7 @@ fn run_uninstall(log: &mut Log) {
     log.say("\n2. Returning firmware loading to the original loader");
     tool("schtasks", &["/end", "/tn", LOADER_TASK]);
     tool("schtasks", &["/delete", "/tn", LOADER_TASK, "/f"]);
+    tool("sc", &["config", ORIGINAL_LOADER_SERVICE, "start=", "demand"]);
     match setup::find_known_instance(LOADER_DEVICE_ID) {
         Ok(Some(instance)) => {
             tool("pnputil", &["/remove-device", &instance]);

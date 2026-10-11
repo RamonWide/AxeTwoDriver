@@ -14,3 +14,4 @@ workspace = true
 
 [target.'cfg(windows)'.dependencies]
 axetwo-stream = { workspace = true }
+axetwo-win = { workspace = true }
