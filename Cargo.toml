@@ -32,7 +32,7 @@ axetwo-usb = { path = "crates/axetwo-usb" }
 axetwo-win = { path = "crates/axetwo-win" }
 axetwo-stream = { path = "crates/axetwo-stream" }
 eframe = "0.36"
-egui = "0.36"
+egui = "0.37"
 
 [workspace.lints.clippy]
 unwrap_used = "warn"
